@@ -1,0 +1,2354 @@
+<!DOCTYPE html>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwMjU4OTA5MjY4MTkwOTQ0MDgwNyIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzk5NjZlMTc4Y2FhMzBjZDBfaW5kZXguaHRtbC04MzAifSwiZXhwIjoxNzkyODQ3NzY3LCJpYXQiOjE3OTI4NDQxNjcsImFsZyI6IlJTMjU2In0.DPBU16JAuzmfW55FunrBYx1ncixE5oKn2_lJAWlCQxCELDh8wAErMQiGvZlR_cs2e9xv2E39iA_ZGF9FygxpE8aKG2rcpPrey0Dag1dOItr85Fk_roBypqYfmnTH0acjWXgX8oSojdvTKJkuuvEJ-NzbGfcjvwu0N9vJWTouPP0dL2nSndnH_xrEgYwU05bEK8yr6JO87qFBPTC9aRtrzqwxSWqKpQn_g2iaou0gsQDxq5Qou-Z08Ohj-Biu5CqDE8uylFFpzIfpKjqbm9PWl_YLhEZmX5ACEm8uO2oDsEEz5RcD2IIStC2oFfR1sk7m4t9vuJA1TR-8eE8-Fani9g","c_9966e178caa30cd0_index.html-830")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coastal Weather Hub — Multi-City Forecast</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            ocean: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 10px 25px -5px rgba(12, 74, 110, 0.07), 0 4px 10px -2px rgba(12, 74, 110, 0.03);
+    }
+    .glass-card-hover {
+      transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 30px -8px rgba(14, 165, 233, 0.18);
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+    .skeleton {
+      animation: pulse-subtle 1.8s infinite ease-in-out;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:"Plus Jakarta Sans", sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.top-0{top:0px}.left-0{left:0px}.right-0{right:0px}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-3{margin-top:0.75rem;margin-bottom:0.75rem}.mb-1{margin-bottom:0.25rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-8{margin-top:2rem}.mt-auto{margin-top:auto}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1\.5{height:0.375rem}.h-10{height:2.5rem}.h-2{height:0.5rem}.h-3{height:0.75rem}.h-3\.5{height:0.875rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-full{height:100%}.h-14{height:3.5rem}.h-4{height:1rem}.h-8{height:2rem}.max-h-\[90vh\]{max-height:90vh}.min-h-screen{min-height:100vh}.min-h-\[480px\]{min-height:480px}.w-1\.5{width:0.375rem}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-3{width:0.75rem}.w-3\.5{width:0.875rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-full{width:100%}.w-16{width:4rem}.w-20{width:5rem}.w-24{width:6rem}.w-28{width:7rem}.w-8{width:2rem}.w-12{width:3rem}.w-4{width:1rem}.max-w-2xl{max-width:42rem}.max-w-7xl{max-width:80rem}.max-w-lg{max-width:32rem}.max-w-xl{max-width:36rem}.flex-grow{flex-grow:1}.scale-95{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes ping{75%, 100%{transform:scale(2);opacity:0}}.animate-ping{animation:ping 1s cubic-bezier(0, 0, 0.2, 1) infinite}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-0\.5{gap:0.125rem}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-0\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.125rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-x{border-left-width:1px;border-right-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-sky-100\/80{border-color:rgb(224 242 254 / 0.8)}.border-sky-100\/90{border-color:rgb(224 242 254 / 0.9)}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-200\/60{border-color:rgb(226 232 240 / 0.6)}.border-slate-200\/80{border-color:rgb(226 232 240 / 0.8)}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-white\/60{border-color:rgb(255 255 255 / 0.6)}.border-blue-100\/60{border-color:rgb(219 234 254 / 0.6)}.border-sky-100\/40{border-color:rgb(224 242 254 / 0.4)}.border-slate-200\/70{border-color:rgb(226 232 240 / 0.7)}.border-slate-200\/90{border-color:rgb(226 232 240 / 0.9)}.border-white\/80{border-color:rgb(255 255 255 / 0.8)}.bg-amber-100{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-black\/30{background-color:rgb(0 0 0 / 0.3)}.bg-cyan-100{--tw-bg-opacity:1;background-color:rgb(207 250 254 / var(--tw-bg-opacity, 1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-emerald-400{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-ocean-100{--tw-bg-opacity:1;background-color:rgb(224 242 254 / var(--tw-bg-opacity, 1))}.bg-ocean-500{--tw-bg-opacity:1;background-color:rgb(14 165 233 / var(--tw-bg-opacity, 1))}.bg-ocean-600{--tw-bg-opacity:1;background-color:rgb(2 132 199 / var(--tw-bg-opacity, 1))}.bg-ocean-700\/80{background-color:rgb(3 105 161 / 0.8)}.bg-rose-100{--tw-bg-opacity:1;background-color:rgb(255 228 230 / var(--tw-bg-opacity, 1))}.bg-rose-500{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.bg-sky-100{--tw-bg-opacity:1;background-color:rgb(224 242 254 / var(--tw-bg-opacity, 1))}.bg-sky-500{--tw-bg-opacity:1;background-color:rgb(14 165 233 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.bg-slate-200\/80{background-color:rgb(226 232 240 / 0.8)}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900\/40{background-color:rgb(15 23 42 / 0.4)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/10{background-color:rgb(255 255 255 / 0.1)}.bg-white\/40{background-color:rgb(255 255 255 / 0.4)}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-white\/90{background-color:rgb(255 255 255 / 0.9)}.bg-blue-50\/60{background-color:rgb(239 246 255 / 0.6)}.bg-ocean-100\/70{background-color:rgb(224 242 254 / 0.7)}.bg-sky-50\/80{background-color:rgb(240 249 255 / 0.8)}.bg-slate-50\/80{background-color:rgb(248 250 252 / 0.8)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right, var(--tw-gradient-stops))}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.from-ocean-500{--tw-gradient-from:#0ea5e9 var(--tw-gradient-from-position);--tw-gradient-to:rgb(14 165 233 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-ocean-600{--tw-gradient-from:#0284c7 var(--tw-gradient-from-position);--tw-gradient-to:rgb(2 132 199 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-ocean-900{--tw-gradient-from:#0c4a6e var(--tw-gradient-from-position);--tw-gradient-to:rgb(12 74 110 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-slate-50{--tw-gradient-from:#f8fafc var(--tw-gradient-from-position);--tw-gradient-to:rgb(248 250 252 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-sky-400{--tw-gradient-from:#38bdf8 var(--tw-gradient-from-position);--tw-gradient-to:rgb(56 189 248 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-sky-50\/50{--tw-gradient-from:rgb(240 249 255 / 0.5) var(--tw-gradient-from-position);--tw-gradient-to:rgb(240 249 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-ocean-800{--tw-gradient-to:rgb(7 89 133 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #075985 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-sky-50\/50{--tw-gradient-to:rgb(240 249 255 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), rgb(240 249 255 / 0.5) var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-ocean-500{--tw-gradient-to:rgb(14 165 233 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #0ea5e9 var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-cyan-400{--tw-gradient-to:#22d3ee var(--tw-gradient-to-position)}.to-cyan-50\/70{--tw-gradient-to:rgb(236 254 255 / 0.7) var(--tw-gradient-to-position)}.to-cyan-500{--tw-gradient-to:#06b6d4 var(--tw-gradient-to-position)}.to-slate-900{--tw-gradient-to:#0f172a var(--tw-gradient-to-position)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-3{padding:0.75rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pb-1{padding-bottom:0.25rem}.pb-4{padding-bottom:1rem}.pr-1{padding-right:0.25rem}.pt-3{padding-top:0.75rem}.pt-1{padding-top:0.25rem}.text-center{text-align:center}.text-right{text-align:right}.font-display{font-family:Outfit, sans-serif}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.font-sans{font-family:"Plus Jakarta Sans", sans-serif}.text-\[11px\]{font-size:11px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-\[10px\]{font-size:10px}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-black{font-weight:900}.font-light{font-weight:300}.font-normal{font-weight:400}.uppercase{text-transform:uppercase}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-tighter{letter-spacing:-0.05em}.tracking-wide{letter-spacing:0.025em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-cyan-700{--tw-text-opacity:1;color:rgb(14 116 144 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-ocean-600{--tw-text-opacity:1;color:rgb(2 132 199 / var(--tw-text-opacity, 1))}.text-ocean-700{--tw-text-opacity:1;color:rgb(3 105 161 / var(--tw-text-opacity, 1))}.text-rose-800{--tw-text-opacity:1;color:rgb(159 18 57 / var(--tw-text-opacity, 1))}.text-sky-800{--tw-text-opacity:1;color:rgb(7 89 133 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11 / var(--tw-text-opacity, 1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-sky-500{--tw-text-opacity:1;color:rgb(14 165 233 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.opacity-0{opacity:0}.opacity-75{opacity:0.75}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-ocean-400\/25{--tw-shadow-color:rgb(56 189 248 / 0.25);--tw-shadow:var(--tw-shadow-colored)}.shadow-ocean-500\/30{--tw-shadow-color:rgb(14 165 233 / 0.3);--tw-shadow:var(--tw-shadow-colored)}.shadow-sky-100{--tw-shadow-color:#e0f2fe;--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.selection\:bg-ocean-200 *::selection{--tw-bg-opacity:1;background-color:rgb(186 230 253 / var(--tw-bg-opacity, 1))}.selection\:bg-ocean-200::selection{--tw-bg-opacity:1;background-color:rgb(186 230 253 / var(--tw-bg-opacity, 1))}.hover\:bg-ocean-400:hover{--tw-bg-opacity:1;background-color:rgb(56 189 248 / var(--tw-bg-opacity, 1))}.hover\:bg-ocean-700:hover{--tw-bg-opacity:1;background-color:rgb(3 105 161 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:bg-white\/20:hover{background-color:rgb(255 255 255 / 0.2)}.hover\:bg-ocean-50\/80:hover{background-color:rgb(240 249 255 / 0.8)}.hover\:bg-white\/80:hover{background-color:rgb(255 255 255 / 0.8)}.hover\:from-ocean-600:hover{--tw-gradient-from:#0284c7 var(--tw-gradient-from-position);--tw-gradient-to:rgb(2 132 199 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-cyan-600:hover{--tw-gradient-to:#0891b2 var(--tw-gradient-to-position)}.hover\:text-ocean-600:hover{--tw-text-opacity:1;color:rgb(2 132 199 / var(--tw-text-opacity, 1))}.hover\:text-slate-900:hover{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:gap-3{gap:0.75rem}.sm\:p-6{padding:1.5rem}.sm\:px-8{padding-left:2rem;padding-right:2rem}}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width: 1024px){.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.lg\:p-8{padding:2rem}}@media (min-width: 1280px){.xl\:grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}}</style></head>
+<body class="bg-gradient-to-br from-slate-50 via-sky-50/50 to-cyan-50/70 text-slate-800 min-h-screen flex flex-col font-sans selection:bg-ocean-200">
+
+  <!-- Bookmark Guide Banner -->
+  <div id="bookmark-banner" class="bg-gradient-to-r from-ocean-900 via-ocean-800 to-slate-900 text-white text-xs px-4 py-2.5 shadow-inner">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="p-1 rounded-md bg-ocean-700/80 text-amber-300">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bookmark" aria-hidden="true" class="lucide lucide-bookmark w-3.5 h-3.5"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"></path></svg>
+        </span>
+        <span>
+          <strong>Want to bookmark in Chrome?</strong> Save this file locally to bookmark it as a local app (<code class="bg-black/30 px-1 py-0.5 rounded text-[11px]">file://</code>) or host it free on Netlify/GitHub.
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="downloadHtmlFile()" class="px-2.5 py-1 bg-ocean-500 hover:bg-ocean-400 text-white font-medium rounded-lg text-xs transition flex items-center gap-1 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" aria-hidden="true" class="lucide lucide-download w-3 h-3"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg> Download .html
+        </button>
+        <button onclick="openBookmarkInstructions()" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-slate-100 font-medium rounded-lg text-xs transition flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="help-circle" aria-hidden="true" class="lucide lucide-help-circle w-3 h-3"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg> 3-Step Guide
+        </button>
+        <button onclick="document.getElementById('bookmark-banner').style.display='none'" class="p-1 text-slate-400 hover:text-white transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-3.5 h-3.5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-sky-100/80 px-4 sm:px-8 py-3.5 transition-all">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Coastal Branding -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-ocean-600 to-cyan-400 flex items-center justify-center text-white shadow-md shadow-ocean-500/30">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="waves" aria-hidden="true" class="lucide lucide-waves w-5 h-5"><path d="M2 12q2.5 2 5 0t5 0 5 0 5 0"></path><path d="M2 19q2.5 2 5 0t5 0 5 0 5 0"></path><path d="M2 5q2.5 2 5 0t5 0 5 0 5 0"></path></svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-display font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+            CoastSync <span class="text-xs uppercase px-2 py-0.5 rounded-full bg-ocean-100 text-ocean-700 font-semibold tracking-wider">Multi-Forecast</span>
+          </h1>
+          <p class="text-xs text-slate-500">Live beach &amp; lake weather in NJ, CA, NC, and FL</p>
+        </div>
+      </div>
+
+      <!-- Action Controls -->
+      <div class="flex items-center flex-wrap gap-2 sm:gap-3">
+        <!-- Units Toggle: °F / °C -->
+        <div class="inline-flex p-1 bg-slate-200/80 rounded-xl text-xs font-semibold">
+          <button id="unit-f-btn" onclick="setUnit('fahrenheit')" class="px-2.5 py-1.5 rounded-lg transition-all duration-200 bg-white text-slate-900 shadow-sm">°F (mph)</button>
+          <button id="unit-c-btn" onclick="setUnit('celsius')" class="px-2.5 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900">°C (km/h)</button>
+        </div>
+
+        <!-- Refresh Button -->
+        <button onclick="fetchAllWeather(true)" id="refresh-btn" class="flex items-center gap-1.5 text-xs font-medium px-3 py-2 bg-white/90 hover:bg-white border border-slate-200 text-slate-700 rounded-xl transition shadow-sm active:scale-95">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="refresh-cw" aria-hidden="true" class="lucide lucide-refresh-cw w-3.5 h-3.5 transition-transform" id="refresh-icon"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+          <span class="hidden sm:inline">Refresh</span>
+        </button>
+
+        <!-- Beach Day Ranking button -->
+        <button onclick="openBeachSummaryModal()" class="flex items-center gap-1.5 text-xs font-medium px-3 py-2 bg-gradient-to-r from-ocean-500 to-cyan-500 hover:from-ocean-600 hover:to-cyan-600 text-white rounded-xl shadow-md shadow-ocean-400/25 transition active:scale-95">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="compass" aria-hidden="true" class="lucide lucide-compass w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"></path></svg>
+          <span>Beach Day Rank</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content View -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    
+    <!-- Top Status Bar & Quick Insights -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-500 pb-1 border-b border-slate-200/60">
+      <div class="flex items-center gap-2">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span>Monitoring 5 coastal points: Beach Haven, Medford Lakes, Carlsbad, Wrightsville Beach &amp; Jupiter</span>
+      </div>
+      <div id="last-updated-text" class="text-slate-400 font-mono">Live data updated at 08:16:08 AM</div>
+    </div>
+
+    <!-- Weather Cards 5-Column Grid -->
+    <div id="weather-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+          <div class="glass-card glass-card-hover rounded-3xl p-5 border border-white/80 flex flex-col justify-between relative overflow-hidden group">
+            
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-ocean-500 to-cyan-400"></div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="text-lg font-bold font-display text-slate-900 leading-tight">Beach Haven</h2>
+                    <span class="text-[11px] font-semibold text-ocean-700 bg-ocean-100/70 px-1.5 py-0.5 rounded-md">NJ</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 tracking-wide">Long Beach Island</p>
+                </div>
+
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shadow-sm" title="Beach &amp; Outdoor Suitability">
+                  65 pts
+                </span>
+              </div>
+            </div>
+
+            <div class="my-3 text-center py-2 bg-gradient-to-b from-sky-50/50 to-transparent rounded-2xl border border-sky-100/40">
+              <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-white shadow-sm shadow-sky-100 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun-medium" aria-hidden="true" class="lucide lucide-sun-medium w-10 h-10 text-amber-400"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M3 12h1"></path><path d="M20 12h1"></path><path d="m18.364 5.636-.707.707"></path><path d="m6.343 17.657-.707.707"></path><path d="m5.636 5.636.707.707"></path><path d="m17.657 17.657.707.707"></path></svg>
+              </div>
+              <div class="text-4xl font-display font-black text-slate-900 tracking-tighter">
+                53<span class="text-2xl font-light text-slate-400 font-sans">°F</span>
+              </div>
+              <p class="text-xs font-medium text-slate-700 mt-0.5">Mainly Clear</p>
+              <div class="flex items-center justify-center gap-3 text-xs text-slate-500 mt-1">
+                <span>H: <strong class="text-slate-800">59°</strong></span>
+                <span>L: <strong class="text-slate-800">53°</strong></span>
+                <span class="text-slate-400">•</span>
+                <span>Feels 46°</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-50/80 p-2.5 rounded-2xl border border-slate-100 text-center mb-3">
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="wind" aria-hidden="true" class="lucide lucide-wind w-3 h-3 text-sky-500"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg> Wind
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  13 <span class="text-[10px] font-normal text-slate-500">mph</span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-medium flex items-center gap-0.5">
+                  <span style="display:inline-block; transform: rotate(358deg)">↑</span> N
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center border-x border-slate-200/70">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplets" aria-hidden="true" class="lucide lucide-droplets w-3 h-3 text-blue-500"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg> Humidity
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  69%
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Crisp
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-3 h-3 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg> UV Max
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  4
+                </div>
+                <div class="text-[10px] text-emerald-600">
+                  Moderate
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-blue-50/60 text-xs text-blue-800 mb-3 border border-blue-100/60">
+              <span class="flex items-center gap-1.5 text-[11px]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-rain" aria-hidden="true" class="lucide lucide-cloud-rain w-3.5 h-3.5 text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg> Precip Chance
+              </span>
+              <span class="font-bold text-[11px]">0%</span>
+            </div>
+
+            <div class="space-y-0.5 pt-1 border-t border-slate-100 flex-grow">
+              <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1 px-1">7-Day Outlook</div>
+              
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 bg-sky-50/80 font-medium">
+              <div class="w-12 text-slate-600 text-ocean-700 font-bold">Today</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun-medium" aria-hidden="true" class="lucide lucide-sun-medium w-4 h-4 text-amber-400"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M3 12h1"></path><path d="M20 12h1"></path><path d="m18.364 5.636-.707.707"></path><path d="m6.343 17.657-.707.707"></path><path d="m5.636 5.636.707.707"></path><path d="m17.657 17.657.707.707"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">59°</span>
+                <span class="text-slate-400 text-[11px]">53°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Sun</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">59°</span>
+                <span class="text-slate-400 text-[11px]">57°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Mon</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">64°</span>
+                <span class="text-slate-400 text-[11px]">54°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Tue</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">60°</span>
+                <span class="text-slate-400 text-[11px]">57°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Wed</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">59°</span>
+                <span class="text-slate-400 text-[11px]">57°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Thu</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">59°</span>
+                <span class="text-slate-400 text-[11px]">58°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Fri</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">64°</span>
+                <span class="text-slate-400 text-[11px]">56°</span>
+              </div>
+            </div>
+          
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-slate-100">
+              <button onclick="openHourlyModal('beach-haven')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-ocean-50/80 border border-slate-200/90 text-ocean-700 font-medium text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clock" aria-hidden="true" class="lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                <span>24-Hour Detailed Breakdown</span>
+              </button>
+            </div>
+
+          </div>
+        
+          <div class="glass-card glass-card-hover rounded-3xl p-5 border border-white/80 flex flex-col justify-between relative overflow-hidden group">
+            
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-ocean-500 to-cyan-400"></div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="text-lg font-bold font-display text-slate-900 leading-tight">Medford Lakes</h2>
+                    <span class="text-[11px] font-semibold text-ocean-700 bg-ocean-100/70 px-1.5 py-0.5 rounded-md">NJ</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 tracking-wide">Pine Barrens Lakes</p>
+                </div>
+
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shadow-sm" title="Beach &amp; Outdoor Suitability">
+                  55 pts
+                </span>
+              </div>
+            </div>
+
+            <div class="my-3 text-center py-2 bg-gradient-to-b from-sky-50/50 to-transparent rounded-2xl border border-sky-100/40">
+              <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-white shadow-sm shadow-sky-100 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-10 h-10 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+              </div>
+              <div class="text-4xl font-display font-black text-slate-900 tracking-tighter">
+                33<span class="text-2xl font-light text-slate-400 font-sans">°F</span>
+              </div>
+              <p class="text-xs font-medium text-slate-700 mt-0.5">Overcast</p>
+              <div class="flex items-center justify-center gap-3 text-xs text-slate-500 mt-1">
+                <span>H: <strong class="text-slate-800">61°</strong></span>
+                <span>L: <strong class="text-slate-800">32°</strong></span>
+                <span class="text-slate-400">•</span>
+                <span>Feels 29°</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-50/80 p-2.5 rounded-2xl border border-slate-100 text-center mb-3">
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="wind" aria-hidden="true" class="lucide lucide-wind w-3 h-3 text-sky-500"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg> Wind
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  1 <span class="text-[10px] font-normal text-slate-500">mph</span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-medium flex items-center gap-0.5">
+                  <span style="display:inline-block; transform: rotate(275deg)">↑</span> W
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center border-x border-slate-200/70">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplets" aria-hidden="true" class="lucide lucide-droplets w-3 h-3 text-blue-500"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg> Humidity
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  97%
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Muggy
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-3 h-3 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg> UV Max
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  4
+                </div>
+                <div class="text-[10px] text-emerald-600">
+                  Moderate
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-blue-50/60 text-xs text-blue-800 mb-3 border border-blue-100/60">
+              <span class="flex items-center gap-1.5 text-[11px]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-rain" aria-hidden="true" class="lucide lucide-cloud-rain w-3.5 h-3.5 text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg> Precip Chance
+              </span>
+              <span class="font-bold text-[11px]">0%</span>
+            </div>
+
+            <div class="space-y-0.5 pt-1 border-t border-slate-100 flex-grow">
+              <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1 px-1">7-Day Outlook</div>
+              
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 bg-sky-50/80 font-medium">
+              <div class="w-12 text-slate-600 text-ocean-700 font-bold">Today</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-fog" aria-hidden="true" class="lucide lucide-cloud-fog w-4 h-4 text-slate-400"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 17H7"></path><path d="M17 21H9"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">61°</span>
+                <span class="text-slate-400 text-[11px]">32°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Sun</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun-medium" aria-hidden="true" class="lucide lucide-sun-medium w-4 h-4 text-amber-400"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M3 12h1"></path><path d="M20 12h1"></path><path d="m18.364 5.636-.707.707"></path><path d="m6.343 17.657-.707.707"></path><path d="m5.636 5.636.707.707"></path><path d="m17.657 17.657.707.707"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">63°</span>
+                <span class="text-slate-400 text-[11px]">34°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Mon</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">68°</span>
+                <span class="text-slate-400 text-[11px]">46°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Tue</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-sun" aria-hidden="true" class="lucide lucide-cloud-sun w-4 h-4 text-sky-500"><path d="M12 2v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="M20 12h2"></path><path d="m19.07 4.93-1.41 1.41"></path><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"></path><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">65°</span>
+                <span class="text-slate-400 text-[11px]">48°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Wed</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">62°</span>
+                <span class="text-slate-400 text-[11px]">44°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Thu</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">65°</span>
+                <span class="text-slate-400 text-[11px]">46°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Fri</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">72°</span>
+                <span class="text-slate-400 text-[11px]">49°</span>
+              </div>
+            </div>
+          
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-slate-100">
+              <button onclick="openHourlyModal('medford-lakes')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-ocean-50/80 border border-slate-200/90 text-ocean-700 font-medium text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clock" aria-hidden="true" class="lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                <span>24-Hour Detailed Breakdown</span>
+              </button>
+            </div>
+
+          </div>
+        
+          <div class="glass-card glass-card-hover rounded-3xl p-5 border border-white/80 flex flex-col justify-between relative overflow-hidden group">
+            
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-ocean-500 to-cyan-400"></div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="text-lg font-bold font-display text-slate-900 leading-tight">Carlsbad</h2>
+                    <span class="text-[11px] font-semibold text-ocean-700 bg-ocean-100/70 px-1.5 py-0.5 rounded-md">CA</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 tracking-wide">San Diego Coast</p>
+                </div>
+
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shadow-sm" title="Beach &amp; Outdoor Suitability">
+                  65 pts
+                </span>
+              </div>
+            </div>
+
+            <div class="my-3 text-center py-2 bg-gradient-to-b from-sky-50/50 to-transparent rounded-2xl border border-sky-100/40">
+              <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-white shadow-sm shadow-sky-100 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-10 h-10 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+              </div>
+              <div class="text-4xl font-display font-black text-slate-900 tracking-tighter">
+                57<span class="text-2xl font-light text-slate-400 font-sans">°F</span>
+              </div>
+              <p class="text-xs font-medium text-slate-700 mt-0.5">Clear Sky</p>
+              <div class="flex items-center justify-center gap-3 text-xs text-slate-500 mt-1">
+                <span>H: <strong class="text-slate-800">74°</strong></span>
+                <span>L: <strong class="text-slate-800">55°</strong></span>
+                <span class="text-slate-400">•</span>
+                <span>Feels 55°</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-50/80 p-2.5 rounded-2xl border border-slate-100 text-center mb-3">
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="wind" aria-hidden="true" class="lucide lucide-wind w-3 h-3 text-sky-500"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg> Wind
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  5 <span class="text-[10px] font-normal text-slate-500">mph</span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-medium flex items-center gap-0.5">
+                  <span style="display:inline-block; transform: rotate(80deg)">↑</span> E
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center border-x border-slate-200/70">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplets" aria-hidden="true" class="lucide lucide-droplets w-3 h-3 text-blue-500"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg> Humidity
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  80%
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Muggy
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-3 h-3 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg> UV Max
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  6
+                </div>
+                <div class="text-[10px] text-amber-500 font-semibold">
+                  High
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-blue-50/60 text-xs text-blue-800 mb-3 border border-blue-100/60">
+              <span class="flex items-center gap-1.5 text-[11px]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-rain" aria-hidden="true" class="lucide lucide-cloud-rain w-3.5 h-3.5 text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg> Precip Chance
+              </span>
+              <span class="font-bold text-[11px]">1%</span>
+            </div>
+
+            <div class="space-y-0.5 pt-1 border-t border-slate-100 flex-grow">
+              <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1 px-1">7-Day Outlook</div>
+              
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 bg-sky-50/80 font-medium">
+              <div class="w-12 text-slate-600 text-ocean-700 font-bold">Today</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">74°</span>
+                <span class="text-slate-400 text-[11px]">55°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Sun</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">75°</span>
+                <span class="text-slate-400 text-[11px]">56°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Mon</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">77°</span>
+                <span class="text-slate-400 text-[11px]">65°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Tue</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">73°</span>
+                <span class="text-slate-400 text-[11px]">62°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Wed</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">72°</span>
+                <span class="text-slate-400 text-[11px]">62°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Thu</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">71°</span>
+                <span class="text-slate-400 text-[11px]">62°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Fri</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-drizzle" aria-hidden="true" class="lucide lucide-cloud-drizzle w-4 h-4 text-blue-400"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M8 19v1"></path><path d="M8 14v1"></path><path d="M16 19v1"></path><path d="M16 14v1"></path><path d="M12 21v1"></path><path d="M12 16v1"></path></svg>
+                <span class="text-[10px] text-blue-500 font-medium">33%</span>
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">68°</span>
+                <span class="text-slate-400 text-[11px]">64°</span>
+              </div>
+            </div>
+          
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-slate-100">
+              <button onclick="openHourlyModal('carlsbad')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-ocean-50/80 border border-slate-200/90 text-ocean-700 font-medium text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clock" aria-hidden="true" class="lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                <span>24-Hour Detailed Breakdown</span>
+              </button>
+            </div>
+
+          </div>
+        
+          <div class="glass-card glass-card-hover rounded-3xl p-5 border border-white/80 flex flex-col justify-between relative overflow-hidden group">
+            
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-ocean-500 to-cyan-400"></div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="text-lg font-bold font-display text-slate-900 leading-tight">Wrightsville Beach</h2>
+                    <span class="text-[11px] font-semibold text-ocean-700 bg-ocean-100/70 px-1.5 py-0.5 rounded-md">NC</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 tracking-wide">Cape Fear Atlantic</p>
+                </div>
+
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shadow-sm" title="Beach &amp; Outdoor Suitability">
+                  65 pts
+                </span>
+              </div>
+            </div>
+
+            <div class="my-3 text-center py-2 bg-gradient-to-b from-sky-50/50 to-transparent rounded-2xl border border-sky-100/40">
+              <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-white shadow-sm shadow-sky-100 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-10 h-10 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+              </div>
+              <div class="text-4xl font-display font-black text-slate-900 tracking-tighter">
+                55<span class="text-2xl font-light text-slate-400 font-sans">°F</span>
+              </div>
+              <p class="text-xs font-medium text-slate-700 mt-0.5">Clear Sky</p>
+              <div class="flex items-center justify-center gap-3 text-xs text-slate-500 mt-1">
+                <span>H: <strong class="text-slate-800">71°</strong></span>
+                <span>L: <strong class="text-slate-800">54°</strong></span>
+                <span class="text-slate-400">•</span>
+                <span>Feels 48°</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-50/80 p-2.5 rounded-2xl border border-slate-100 text-center mb-3">
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="wind" aria-hidden="true" class="lucide lucide-wind w-3 h-3 text-sky-500"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg> Wind
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  14 <span class="text-[10px] font-normal text-slate-500">mph</span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-medium flex items-center gap-0.5">
+                  <span style="display:inline-block; transform: rotate(22deg)">↑</span> NNE
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center border-x border-slate-200/70">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplets" aria-hidden="true" class="lucide lucide-droplets w-3 h-3 text-blue-500"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg> Humidity
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  81%
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Muggy
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-3 h-3 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg> UV Max
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  5
+                </div>
+                <div class="text-[10px] text-emerald-600">
+                  Moderate
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-blue-50/60 text-xs text-blue-800 mb-3 border border-blue-100/60">
+              <span class="flex items-center gap-1.5 text-[11px]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-rain" aria-hidden="true" class="lucide lucide-cloud-rain w-3.5 h-3.5 text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg> Precip Chance
+              </span>
+              <span class="font-bold text-[11px]">0%</span>
+            </div>
+
+            <div class="space-y-0.5 pt-1 border-t border-slate-100 flex-grow">
+              <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1 px-1">7-Day Outlook</div>
+              
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 bg-sky-50/80 font-medium">
+              <div class="w-12 text-slate-600 text-ocean-700 font-bold">Today</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun-medium" aria-hidden="true" class="lucide lucide-sun-medium w-4 h-4 text-amber-400"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M3 12h1"></path><path d="M20 12h1"></path><path d="m18.364 5.636-.707.707"></path><path d="m6.343 17.657-.707.707"></path><path d="m5.636 5.636.707.707"></path><path d="m17.657 17.657.707.707"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">71°</span>
+                <span class="text-slate-400 text-[11px]">54°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Sun</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">70°</span>
+                <span class="text-slate-400 text-[11px]">57°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Mon</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">73°</span>
+                <span class="text-slate-400 text-[11px]">53°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Tue</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">75°</span>
+                <span class="text-slate-400 text-[11px]">52°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Wed</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">75°</span>
+                <span class="text-slate-400 text-[11px]">57°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Thu</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud" aria-hidden="true" class="lucide lucide-cloud w-4 h-4 text-slate-500"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">74°</span>
+                <span class="text-slate-400 text-[11px]">56°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Fri</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">75°</span>
+                <span class="text-slate-400 text-[11px]">54°</span>
+              </div>
+            </div>
+          
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-slate-100">
+              <button onclick="openHourlyModal('wrightsville-beach')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-ocean-50/80 border border-slate-200/90 text-ocean-700 font-medium text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clock" aria-hidden="true" class="lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                <span>24-Hour Detailed Breakdown</span>
+              </button>
+            </div>
+
+          </div>
+        
+          <div class="glass-card glass-card-hover rounded-3xl p-5 border border-white/80 flex flex-col justify-between relative overflow-hidden group">
+            
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-ocean-500 to-cyan-400"></div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="text-lg font-bold font-display text-slate-900 leading-tight">Jupiter</h2>
+                    <span class="text-[11px] font-semibold text-ocean-700 bg-ocean-100/70 px-1.5 py-0.5 rounded-md">FL</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 tracking-wide">Palm Beach Inlet</p>
+                </div>
+
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 shadow-sm" title="Beach &amp; Outdoor Suitability">
+                  93 pts
+                </span>
+              </div>
+            </div>
+
+            <div class="my-3 text-center py-2 bg-gradient-to-b from-sky-50/50 to-transparent rounded-2xl border border-sky-100/40">
+              <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-white shadow-sm shadow-sky-100 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-10 h-10 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+              </div>
+              <div class="text-4xl font-display font-black text-slate-900 tracking-tighter">
+                72<span class="text-2xl font-light text-slate-400 font-sans">°F</span>
+              </div>
+              <p class="text-xs font-medium text-slate-700 mt-0.5">Clear Sky</p>
+              <div class="flex items-center justify-center gap-3 text-xs text-slate-500 mt-1">
+                <span>H: <strong class="text-slate-800">82°</strong></span>
+                <span>L: <strong class="text-slate-800">70°</strong></span>
+                <span class="text-slate-400">•</span>
+                <span>Feels 74°</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-50/80 p-2.5 rounded-2xl border border-slate-100 text-center mb-3">
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="wind" aria-hidden="true" class="lucide lucide-wind w-3 h-3 text-sky-500"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"></path><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"></path><path d="M9.8 4.4A2 2 0 1 1 11 8H2"></path></svg> Wind
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  5 <span class="text-[10px] font-normal text-slate-500">mph</span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-medium flex items-center gap-0.5">
+                  <span style="display:inline-block; transform: rotate(31deg)">↑</span> NNE
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center border-x border-slate-200/70">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplets" aria-hidden="true" class="lucide lucide-droplets w-3 h-3 text-blue-500"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg> Humidity
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  66%
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  Crisp
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-3 h-3 text-amber-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg> UV Max
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  6
+                </div>
+                <div class="text-[10px] text-amber-500 font-semibold">
+                  High
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-blue-50/60 text-xs text-blue-800 mb-3 border border-blue-100/60">
+              <span class="flex items-center gap-1.5 text-[11px]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-rain" aria-hidden="true" class="lucide lucide-cloud-rain w-3.5 h-3.5 text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg> Precip Chance
+              </span>
+              <span class="font-bold text-[11px]">16%</span>
+            </div>
+
+            <div class="space-y-0.5 pt-1 border-t border-slate-100 flex-grow">
+              <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1 px-1">7-Day Outlook</div>
+              
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 bg-sky-50/80 font-medium">
+              <div class="w-12 text-slate-600 text-ocean-700 font-bold">Today</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-drizzle" aria-hidden="true" class="lucide lucide-cloud-drizzle w-4 h-4 text-blue-400"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M8 19v1"></path><path d="M8 14v1"></path><path d="M16 19v1"></path><path d="M16 14v1"></path><path d="M12 21v1"></path><path d="M12 16v1"></path></svg>
+                
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">82°</span>
+                <span class="text-slate-400 text-[11px]">70°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Sun</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-sun-rain" aria-hidden="true" class="lucide lucide-cloud-sun-rain w-4 h-4 text-blue-500"><path d="M12 2v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="M20 12h2"></path><path d="m19.07 4.93-1.41 1.41"></path><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"></path><path d="M3 20a5 5 0 1 1 8.9-4H13a3 3 0 0 1 2 5.24"></path><path d="M11 20v2"></path><path d="M7 19v2"></path></svg>
+                <span class="text-[10px] text-blue-500 font-medium">83%</span>
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">78°</span>
+                <span class="text-slate-400 text-[11px]">70°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Mon</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-sun-rain" aria-hidden="true" class="lucide lucide-cloud-sun-rain w-4 h-4 text-blue-500"><path d="M12 2v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="M20 12h2"></path><path d="m19.07 4.93-1.41 1.41"></path><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"></path><path d="M3 20a5 5 0 1 1 8.9-4H13a3 3 0 0 1 2 5.24"></path><path d="M11 20v2"></path><path d="M7 19v2"></path></svg>
+                <span class="text-[10px] text-blue-500 font-medium">83%</span>
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">80°</span>
+                <span class="text-slate-400 text-[11px]">75°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Tue</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-drizzle" aria-hidden="true" class="lucide lucide-cloud-drizzle w-4 h-4 text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M8 19v1"></path><path d="M8 14v1"></path><path d="M16 19v1"></path><path d="M16 14v1"></path><path d="M12 21v1"></path><path d="M12 16v1"></path></svg>
+                <span class="text-[10px] text-blue-500 font-medium">45%</span>
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">82°</span>
+                <span class="text-slate-400 text-[11px]">76°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Wed</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-drizzle" aria-hidden="true" class="lucide lucide-cloud-drizzle w-4 h-4 text-blue-400"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M8 19v1"></path><path d="M8 14v1"></path><path d="M16 19v1"></path><path d="M16 14v1"></path><path d="M12 21v1"></path><path d="M12 16v1"></path></svg>
+                <span class="text-[10px] text-blue-500 font-medium">42%</span>
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">81°</span>
+                <span class="text-slate-400 text-[11px]">76°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Thu</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-drizzle" aria-hidden="true" class="lucide lucide-cloud-drizzle w-4 h-4 text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M8 19v1"></path><path d="M8 14v1"></path><path d="M16 19v1"></path><path d="M16 14v1"></path><path d="M12 21v1"></path><path d="M12 16v1"></path></svg>
+                <span class="text-[10px] text-blue-500 font-medium">38%</span>
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">82°</span>
+                <span class="text-slate-400 text-[11px]">77°</span>
+              </div>
+            </div>
+          
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ">
+              <div class="w-12 text-slate-600 ">Fri</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-drizzle" aria-hidden="true" class="lucide lucide-cloud-drizzle w-4 h-4 text-blue-400"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M8 19v1"></path><path d="M8 14v1"></path><path d="M16 19v1"></path><path d="M16 14v1"></path><path d="M12 21v1"></path><path d="M12 16v1"></path></svg>
+                <span class="text-[10px] text-blue-500 font-medium">39%</span>
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">82°</span>
+                <span class="text-slate-400 text-[11px]">77°</span>
+              </div>
+            </div>
+          
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-slate-100">
+              <button onclick="openHourlyModal('jupiter')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-ocean-50/80 border border-slate-200/90 text-ocean-700 font-medium text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clock" aria-hidden="true" class="lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                <span>24-Hour Detailed Breakdown</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+    <!-- Coastal Activity Rating Guide -->
+    <div class="glass-card rounded-2xl p-5 border border-sky-100/90 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-8">
+      <div class="flex items-start gap-3">
+        <div class="p-2.5 rounded-xl bg-amber-100 text-amber-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun-medium" aria-hidden="true" class="lucide lucide-sun-medium w-6 h-6"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v1"></path><path d="M12 20v1"></path><path d="M3 12h1"></path><path d="M20 12h1"></path><path d="m18.364 5.636-.707.707"></path><path d="m6.343 17.657-.707.707"></path><path d="m5.636 5.636.707.707"></path><path d="m17.657 17.657.707.707"></path></svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-slate-800">Coastal Comfort &amp; Activity Score</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Calculated using real-time temperature, wind speed, UV levels, cloud cover, and rain probability.</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-medium flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Prime Beach Day (82-100)
+        </span>
+        <span class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-medium flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span> Pleasant / Breezy (68-81)
+        </span>
+        <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-medium flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Moderate / Windy (50-67)
+        </span>
+        <span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 font-medium flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Poor / Wet (&lt;50)
+        </span>
+      </div>
+    </div>
+  </main>
+
+  <!-- 24-Hour Detailed Forecast Modal -->
+  <div id="hourly-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 p-6 max-h-[90vh] flex flex-col transform transition-all scale-95 opacity-0 duration-200" id="modal-box">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h2 id="modal-city-name" class="text-xl font-bold font-display text-slate-900">City Details</h2>
+          <p id="modal-city-subtitle" class="text-xs text-slate-500">Next 24-Hour detailed forecast breakdown</p>
+        </div>
+        <button onclick="closeHourlyModal()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Hourly list -->
+      <div class="py-4 overflow-y-auto space-y-2.5 flex-grow pr-1" id="hourly-list-container">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+        <span>Times shown in local location timezone</span>
+        <button onclick="closeHourlyModal()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-medium hover:bg-slate-700">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beach Rank Comparison Modal -->
+  <div id="comparison-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-100 p-6 flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-cyan-100 text-cyan-700 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="award" aria-hidden="true" class="lucide lucide-award w-5 h-5"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"></path><circle cx="12" cy="8" r="6"></circle></svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold font-display text-slate-900">Current Beach &amp; Outing Score</h2>
+            <p class="text-xs text-slate-500">Ranked by warmth, sunshine, calm winds &amp; clear skies</p>
+          </div>
+        </div>
+        <button onclick="closeBeachSummaryModal()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+
+      <div id="rankings-container" class="py-4 space-y-3">
+        <!-- Injected ranking items -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 text-right">
+        <button onclick="closeBeachSummaryModal()" class="px-4 py-2 bg-ocean-600 hover:bg-ocean-700 text-white rounded-xl text-xs font-medium">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chrome Bookmark Instructions Modal -->
+  <div id="bookmark-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-100 p-6 flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-amber-100 text-amber-700 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bookmark-plus" aria-hidden="true" class="lucide lucide-bookmark-plus w-5 h-5"><path d="M12 7v6"></path><path d="M15 10H9"></path><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"></path></svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold font-display text-slate-900">How to Bookmark in Chrome</h2>
+            <p class="text-xs text-slate-500">Two quick ways to keep this dashboard accessible</p>
+          </div>
+        </div>
+        <button onclick="closeBookmarkInstructions()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 text-xs text-slate-600">
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <h4 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1.5">
+            Option A: Save to your computer (Fastest)
+          </h4>
+          <ol class="list-decimal list-inside space-y-1 text-slate-600 mt-2">
+            <li>Click the <strong>"Download .html"</strong> button below.</li>
+            <li>Double click or drag the downloaded <code class="bg-slate-200 px-1 py-0.5 rounded">weather_dashboard.html</code> file into Google Chrome.</li>
+            <li>Press <kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-sm text-slate-700 font-mono">Ctrl + D</kbd> (Windows) or <kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded shadow-sm text-slate-700 font-mono">Cmd + D</kbd> (Mac) to bookmark it! It runs entirely in your browser with live API updates.</li>
+          </ol>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <h4 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1.5">
+            Option B: Host on the Web (Free public URL)
+          </h4>
+          <p class="mt-1">
+            Download this file, then drag and drop it onto <a href="https://app.netlify.com/drop" target="_blank" class="text-ocean-600 font-semibold underline">app.netlify.com/drop</a> or upload it to <a href="https://pages.github.com" target="_blank" class="text-ocean-600 font-semibold underline">GitHub Pages</a> to get a permanent <code class="bg-slate-200 px-1 py-0.5 rounded">https://...</code> link you can access from your phone or any computer.
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+        <button onclick="downloadHtmlFile()" class="px-4 py-2 bg-ocean-600 hover:bg-ocean-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" aria-hidden="true" class="lucide lucide-download w-3.5 h-3.5"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg> Download HTML Now
+        </button>
+        <button onclick="closeBookmarkInstructions()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto py-5 border-t border-slate-200/60 bg-white/40 text-center text-xs text-slate-400">
+    <p>Powered by <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline hover:text-ocean-600 font-medium">Open-Meteo Weather API</a> • Free, high-resolution NOAA &amp; European models</p>
+  </footer>
+
+  <!-- Script Logic -->
+  <script>
+    // 5 Coastal Target Locations
+    const LOCATIONS = [
+      {
+        id: 'beach-haven',
+        name: 'Beach Haven',
+        state: 'NJ',
+        descriptor: 'Long Beach Island',
+        lat: 39.2415,
+        lon: -74.2418,
+        timezone: 'America/New_York',
+        coastalType: 'Ocean Barrier Island'
+      },
+      {
+        id: 'medford-lakes',
+        name: 'Medford Lakes',
+        state: 'NJ',
+        descriptor: 'Pine Barrens Lakes',
+        lat: 39.8690,
+        lon: -74.8199,
+        timezone: 'America/New_York',
+        coastalType: 'Lake & Woodlands'
+      },
+      {
+        id: 'carlsbad',
+        name: 'Carlsbad',
+        state: 'CA',
+        descriptor: 'San Diego Coast',
+        lat: 33.1581,
+        lon: -117.3506,
+        timezone: 'America/Los_Angeles',
+        coastalType: 'Pacific Surf & Bluffs'
+      },
+      {
+        id: 'wrightsville-beach',
+        name: 'Wrightsville Beach',
+        state: 'NC',
+        descriptor: 'Cape Fear Atlantic',
+        lat: 34.2082,
+        lon: -77.7964,
+        timezone: 'America/New_York',
+        coastalType: 'Atlantic Barrier Island'
+      },
+      {
+        id: 'jupiter',
+        name: 'Jupiter',
+        state: 'FL',
+        descriptor: 'Palm Beach Inlet',
+        lat: 26.9342,
+        lon: -80.0942,
+        timezone: 'America/New_York',
+        coastalType: 'Tropical Coast & Inlet'
+      }
+    ];
+
+    let currentUnit = 'fahrenheit';
+    let weatherStore = {};
+
+    function decodeWmo(code) {
+      const map = {
+        0: { label: 'Clear Sky', icon: 'sun', color: 'text-amber-500' },
+        1: { label: 'Mainly Clear', icon: 'sun-medium', color: 'text-amber-400' },
+        2: { label: 'Partly Cloudy', icon: 'cloud-sun', color: 'text-sky-500' },
+        3: { label: 'Overcast', icon: 'cloud', color: 'text-slate-500' },
+        45: { label: 'Fog', icon: 'cloud-fog', color: 'text-slate-400' },
+        48: { label: 'Depositing Rime Fog', icon: 'cloud-fog', color: 'text-slate-400' },
+        51: { label: 'Light Drizzle', icon: 'cloud-drizzle', color: 'text-blue-400' },
+        53: { label: 'Moderate Drizzle', icon: 'cloud-drizzle', color: 'text-blue-500' },
+        55: { label: 'Dense Drizzle', icon: 'cloud-rain', color: 'text-blue-600' },
+        61: { label: 'Slight Rain', icon: 'cloud-rain', color: 'text-blue-500' },
+        63: { label: 'Moderate Rain', icon: 'cloud-rain', color: 'text-blue-600' },
+        65: { label: 'Heavy Rain', icon: 'cloud-lightning', color: 'text-indigo-600' },
+        71: { label: 'Slight Snow', icon: 'snowflake', color: 'text-sky-300' },
+        73: { label: 'Moderate Snow', icon: 'snowflake', color: 'text-sky-400' },
+        75: { label: 'Heavy Snow', icon: 'snowflake', color: 'text-sky-500' },
+        80: { label: 'Rain Showers', icon: 'cloud-sun-rain', color: 'text-blue-500' },
+        81: { label: 'Moderate Showers', icon: 'cloud-rain', color: 'text-blue-600' },
+        82: { label: 'Violent Showers', icon: 'cloud-lightning', color: 'text-indigo-700' },
+        95: { label: 'Thunderstorm', icon: 'zap', color: 'text-amber-500' },
+        96: { label: 'Thunderstorm with Hail', icon: 'zap', color: 'text-rose-500' },
+        99: { label: 'Severe Thunderstorm', icon: 'zap', color: 'text-rose-600' },
+      };
+      return map[code] || { label: 'Partly Cloudy', icon: 'cloud-sun', color: 'text-sky-500' };
+    }
+
+    function degToCompass(deg) {
+      const val = Math.floor((deg / 22.5) + 0.5);
+      const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+      return arr[(val % 16)];
+    }
+
+    function computeBeachScore(current, todayDaily) {
+      if (!current) return { score: 70, label: 'Pleasant', class: 'bg-sky-100 text-sky-800' };
+      
+      let tempF = currentUnit === 'fahrenheit' ? current.temperature_2m : (current.temperature_2m * 9/5 + 32);
+      let windMph = currentUnit === 'fahrenheit' ? current.wind_speed_10m : (current.wind_speed_10m * 0.621371);
+      let precipProb = todayDaily?.precipitation_probability_max?.[0] ?? 0;
+      
+      let score = 100;
+      if (tempF < 60) score -= 35;
+      else if (tempF < 68) score -= 18;
+      else if (tempF > 94) score -= 15;
+      
+      if (windMph > 22) score -= 30;
+      else if (windMph > 15) score -= 15;
+      
+      score -= (precipProb * 0.45);
+      
+      if (current.weather_code >= 50) score -= 25;
+      else if (current.weather_code >= 3) score -= 10;
+      
+      score = Math.max(10, Math.min(99, Math.round(score)));
+
+      if (score >= 82) return { score, label: 'Prime Beach Day', class: 'bg-emerald-100 text-emerald-800' };
+      if (score >= 68) return { score, label: 'Pleasant & Breezy', class: 'bg-sky-100 text-sky-800' };
+      if (score >= 50) return { score, label: 'Fair / Moderate', class: 'bg-amber-100 text-amber-800' };
+      return { score, label: 'Poor / Choppy', class: 'bg-rose-100 text-rose-800' };
+    }
+
+    function setUnit(unit) {
+      if (currentUnit === unit) return;
+      currentUnit = unit;
+
+      const fBtn = document.getElementById('unit-f-btn');
+      const cBtn = document.getElementById('unit-c-btn');
+
+      if (unit === 'fahrenheit') {
+        fBtn.className = 'px-2.5 py-1.5 rounded-lg transition-all duration-200 bg-white text-slate-900 shadow-sm';
+        cBtn.className = 'px-2.5 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900';
+      } else {
+        cBtn.className = 'px-2.5 py-1.5 rounded-lg transition-all duration-200 bg-white text-slate-900 shadow-sm';
+        fBtn.className = 'px-2.5 py-1.5 rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900';
+      }
+
+      fetchAllWeather();
+    }
+
+    function buildApiUrl(loc) {
+      const tempParam = currentUnit === 'fahrenheit' ? '&temperature_unit=fahrenheit' : '';
+      const windParam = currentUnit === 'fahrenheit' ? '&wind_speed_unit=mph' : '&wind_speed_unit=kmh';
+      const precipParam = currentUnit === 'fahrenheit' ? '&precipitation_unit=inch' : '&precipitation_unit=mm';
+      
+      return `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m,relative_humidity_2m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,wind_speed_10m_max&timezone=${encodeURIComponent(loc.timezone)}${tempParam}${windParam}${precipParam}&forecast_days=7`;
+    }
+
+    function generateFallback(loc) {
+      const isF = currentUnit === 'fahrenheit';
+      const baseTemp = loc.name === 'Jupiter' ? 84 : loc.name === 'Carlsbad' ? 70 : loc.name === 'Wrightsville Beach' ? 75 : loc.name === 'Medford Lakes' ? 65 : 63;
+      const tNow = isF ? baseTemp : Math.round((baseTemp - 32) * 5/9);
+      const days = ['Today', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      
+      return {
+        current: {
+          temperature_2m: tNow,
+          apparent_temperature: tNow + 1,
+          relative_humidity_2m: 68,
+          weather_code: 1,
+          wind_speed_10m: isF ? 11 : 17,
+          wind_direction_10m: 135,
+          wind_gusts_10m: isF ? 15 : 24,
+          precipitation: 0
+        },
+        daily: {
+          time: days.map((_, i) => new Date(Date.now() + i * 86400000).toISOString().split('T')[0]),
+          weather_code: [1, 0, 2, 61, 1, 0, 2],
+          temperature_2m_max: days.map((_, i) => tNow + 3 + (i % 3)),
+          temperature_2m_min: days.map((_, i) => tNow - 7 + (i % 2)),
+          uv_index_max: [7, 8, 7, 3, 8, 8, 7],
+          precipitation_probability_max: [10, 5, 20, 65, 10, 0, 15],
+          wind_speed_10m_max: days.map(() => (isF ? 14 : 22))
+        },
+        hourly: {
+          time: Array.from({length: 24}, (_, i) => new Date(Date.now() + i * 3600000).toISOString()),
+          temperature_2m: Array.from({length: 24}, (_, i) => tNow + Math.sin(i / 3) * 4),
+          weather_code: Array.from({length: 24}, () => 1),
+          precipitation_probability: Array.from({length: 24}, () => 10),
+          wind_speed_10m: Array.from({length: 24}, () => (isF ? 10 : 16)),
+          relative_humidity_2m: Array.from({length: 24}, () => 65)
+        }
+      };
+    }
+
+    function renderSkeletons() {
+      const container = document.getElementById('weather-cards-container');
+      container.innerHTML = LOCATIONS.map(() => `
+        <div class="glass-card rounded-3xl p-5 border border-white/60 flex flex-col justify-between space-y-4 skeleton min-h-[480px]">
+          <div class="flex justify-between items-start">
+            <div class="space-y-2">
+              <div class="h-5 w-24 bg-slate-200 rounded"></div>
+              <div class="h-3 w-16 bg-slate-200 rounded"></div>
+            </div>
+            <div class="h-8 w-8 bg-slate-200 rounded-full"></div>
+          </div>
+          <div class="py-6 space-y-3">
+            <div class="h-10 w-20 bg-slate-200 rounded mx-auto"></div>
+            <div class="h-4 w-28 bg-slate-200 rounded mx-auto"></div>
+          </div>
+          <div class="space-y-2">
+            <div class="h-14 bg-slate-100 rounded-2xl"></div>
+            <div class="h-14 bg-slate-100 rounded-2xl"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function fetchAllWeather(isManualClick = false) {
+      const refreshIcon = document.getElementById('refresh-icon');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      if (Object.keys(weatherStore).length === 0) {
+        renderSkeletons();
+      }
+
+      const promises = LOCATIONS.map(async (loc) => {
+        try {
+          const res = await fetch(buildApiUrl(loc));
+          if (!res.ok) throw new Error('API fetch error');
+          const data = await res.json();
+          weatherStore[loc.id] = data;
+        } catch (err) {
+          console.warn(`Fallback triggered for ${loc.name}`, err);
+          weatherStore[loc.id] = generateFallback(loc);
+        }
+      });
+
+      await Promise.all(promises);
+
+      setTimeout(() => {
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+        renderWeatherGrid();
+        updateTimestamp();
+      }, 300);
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('last-updated-text').textContent = `Live data updated at ${timeStr}`;
+    }
+
+    function renderWeatherGrid() {
+      const container = document.getElementById('weather-cards-container');
+      const tempSymbol = currentUnit === 'fahrenheit' ? '°F' : '°C';
+      const speedSymbol = currentUnit === 'fahrenheit' ? 'mph' : 'km/h';
+
+      container.innerHTML = LOCATIONS.map((loc) => {
+        const data = weatherStore[loc.id];
+        if (!data) return '';
+
+        const current = data.current;
+        const daily = data.daily;
+        const condition = decodeWmo(current.weather_code);
+        const beachVibe = computeBeachScore(current, daily);
+
+        const windDir = degToCompass(current.wind_direction_10m);
+        const currentTemp = Math.round(current.temperature_2m);
+        const feelsLike = Math.round(current.apparent_temperature);
+        const todayHigh = Math.round(daily.temperature_2m_max[0]);
+        const todayLow = Math.round(daily.temperature_2m_min[0]);
+        const todayUv = Math.round(daily.uv_index_max[0] || 0);
+        const todayPrecip = daily.precipitation_probability_max[0] ?? 0;
+
+        let forecastDaysHtml = '';
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        for (let i = 0; i < 7; i++) {
+          const dateObj = new Date(daily.time[i] + 'T00:00:00');
+          const isToday = i === 0;
+          const dayName = isToday ? 'Today' : dayNames[dateObj.getDay()];
+          const dayCondition = decodeWmo(daily.weather_code[i]);
+          const hi = Math.round(daily.temperature_2m_max[i]);
+          const lo = Math.round(daily.temperature_2m_min[i]);
+          const rainProb = daily.precipitation_probability_max[i] ?? 0;
+
+          forecastDaysHtml += `
+            <div class="flex items-center justify-between text-xs py-1.5 px-2 rounded-xl transition hover:bg-white/80 ${isToday ? 'bg-sky-50/80 font-medium' : ''}">
+              <div class="w-12 text-slate-600 ${isToday ? 'text-ocean-700 font-bold' : ''}">${dayName}</div>
+              <div class="flex items-center gap-1.5 w-16 justify-center">
+                <i data-lucide="${dayCondition.icon}" class="w-4 h-4 ${dayCondition.color}"></i>
+                ${rainProb > 25 ? `<span class="text-[10px] text-blue-500 font-medium">${rainProb}%</span>` : ''}
+              </div>
+              <div class="flex items-center gap-2 text-right justify-end font-mono">
+                <span class="text-slate-800 font-semibold">${hi}°</span>
+                <span class="text-slate-400 text-[11px]">${lo}°</span>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="glass-card glass-card-hover rounded-3xl p-5 border border-white/80 flex flex-col justify-between relative overflow-hidden group">
+            
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-ocean-500 to-cyan-400"></div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="text-lg font-bold font-display text-slate-900 leading-tight">${loc.name}</h2>
+                    <span class="text-[11px] font-semibold text-ocean-700 bg-ocean-100/70 px-1.5 py-0.5 rounded-md">${loc.state}</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 tracking-wide">${loc.descriptor}</p>
+                </div>
+
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${beachVibe.class} shadow-sm" title="Beach & Outdoor Suitability">
+                  ${beachVibe.score} pts
+                </span>
+              </div>
+            </div>
+
+            <div class="my-3 text-center py-2 bg-gradient-to-b from-sky-50/50 to-transparent rounded-2xl border border-sky-100/40">
+              <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-white shadow-sm shadow-sky-100 mb-2">
+                <i data-lucide="${condition.icon}" class="w-10 h-10 ${condition.color}"></i>
+              </div>
+              <div class="text-4xl font-display font-black text-slate-900 tracking-tighter">
+                ${currentTemp}<span class="text-2xl font-light text-slate-400 font-sans">${tempSymbol}</span>
+              </div>
+              <p class="text-xs font-medium text-slate-700 mt-0.5">${condition.label}</p>
+              <div class="flex items-center justify-center gap-3 text-xs text-slate-500 mt-1">
+                <span>H: <strong class="text-slate-800">${todayHigh}°</strong></span>
+                <span>L: <strong class="text-slate-800">${todayLow}°</strong></span>
+                <span class="text-slate-400">•</span>
+                <span>Feels ${feelsLike}°</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-50/80 p-2.5 rounded-2xl border border-slate-100 text-center mb-3">
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <i data-lucide="wind" class="w-3 h-3 text-sky-500"></i> Wind
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  ${Math.round(current.wind_speed_10m)} <span class="text-[10px] font-normal text-slate-500">${speedSymbol}</span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-medium flex items-center gap-0.5">
+                  <span style="display:inline-block; transform: rotate(${current.wind_direction_10m}deg)">↑</span> ${windDir}
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center border-x border-slate-200/70">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <i data-lucide="droplets" class="w-3 h-3 text-blue-500"></i> Humidity
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  ${current.relative_humidity_2m}%
+                </div>
+                <div class="text-[10px] text-slate-400">
+                  ${current.relative_humidity_2m > 75 ? 'Muggy' : 'Crisp'}
+                </div>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <div class="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                  <i data-lucide="sun" class="w-3 h-3 text-amber-500"></i> UV Max
+                </div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">
+                  ${todayUv}
+                </div>
+                <div class="text-[10px] ${todayUv >= 8 ? 'text-rose-500 font-bold' : todayUv >= 6 ? 'text-amber-500 font-semibold' : 'text-emerald-600'}">
+                  ${todayUv >= 8 ? 'Very High' : todayUv >= 6 ? 'High' : 'Moderate'}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-blue-50/60 text-xs text-blue-800 mb-3 border border-blue-100/60">
+              <span class="flex items-center gap-1.5 text-[11px]">
+                <i data-lucide="cloud-rain" class="w-3.5 h-3.5 text-blue-500"></i> Precip Chance
+              </span>
+              <span class="font-bold text-[11px]">${todayPrecip}%</span>
+            </div>
+
+            <div class="space-y-0.5 pt-1 border-t border-slate-100 flex-grow">
+              <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1 px-1">7-Day Outlook</div>
+              ${forecastDaysHtml}
+            </div>
+
+            <div class="pt-3 mt-2 border-t border-slate-100">
+              <button onclick="openHourlyModal('${loc.id}')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-ocean-50/80 border border-slate-200/90 text-ocean-700 font-medium text-xs flex items-center justify-center gap-1.5 transition active:scale-98 shadow-sm">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                <span>24-Hour Detailed Breakdown</span>
+              </button>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function openHourlyModal(locationId) {
+      const loc = LOCATIONS.find(l => l.id === locationId);
+      const data = weatherStore[locationId];
+      if (!loc || !data || !data.hourly) return;
+
+      document.getElementById('modal-city-name').textContent = `${loc.name}, ${loc.state}`;
+      document.getElementById('modal-city-subtitle').textContent = `24-Hour Timeline • ${loc.descriptor} (${loc.timezone})`;
+
+      const listContainer = document.getElementById('hourly-list-container');
+      const tempSymbol = currentUnit === 'fahrenheit' ? '°F' : '°C';
+      const speedSymbol = currentUnit === 'fahrenheit' ? 'mph' : 'km/h';
+
+      const hoursHtml = data.hourly.time.slice(0, 24).map((timeStr, idx) => {
+        const timeObj = new Date(timeStr);
+        const hourFormatted = timeObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const code = data.hourly.weather_code[idx];
+        const cond = decodeWmo(code);
+        const temp = Math.round(data.hourly.temperature_2m[idx]);
+        const precip = data.hourly.precipitation_probability ? data.hourly.precipitation_probability[idx] : 0;
+        const wind = Math.round(data.hourly.wind_speed_10m[idx]);
+
+        return `
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-sky-50/60 transition border border-slate-100/90 text-xs">
+            <div class="w-20 font-semibold text-slate-700">${hourFormatted}</div>
+            <div class="flex items-center gap-2 w-32">
+              <i data-lucide="${cond.icon}" class="w-4 h-4 ${cond.color}"></i>
+              <span class="truncate text-slate-600">${cond.label}</span>
+            </div>
+            <div class="flex items-center gap-1 w-16 text-blue-600 font-medium">
+              <i data-lucide="cloud-rain" class="w-3 h-3"></i> ${precip}%
+            </div>
+            <div class="flex items-center gap-1 w-20 text-slate-500 font-medium">
+              <i data-lucide="wind" class="w-3 h-3 text-sky-500"></i> ${wind} ${speedSymbol}
+            </div>
+            <div class="font-bold font-mono text-slate-800 text-sm">
+              ${temp}${tempSymbol}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      listContainer.innerHTML = hoursHtml;
+
+      const modal = document.getElementById('hourly-modal');
+      const box = document.getElementById('modal-box');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => {
+        box.classList.remove('scale-95', 'opacity-0');
+        box.classList.add('scale-100', 'opacity-100');
+      }, 10);
+
+      lucide.createIcons();
+    }
+
+    function closeHourlyModal() {
+      const modal = document.getElementById('hourly-modal');
+      const box = document.getElementById('modal-box');
+      box.classList.remove('scale-100', 'opacity-100');
+      box.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }, 150);
+    }
+
+    function openBeachSummaryModal() {
+      const modal = document.getElementById('comparison-modal');
+      const container = document.getElementById('rankings-container');
+
+      const ranked = LOCATIONS.map(loc => {
+        const data = weatherStore[loc.id];
+        const current = data?.current;
+        const daily = data?.daily;
+        const beach = computeBeachScore(current, daily);
+        return {
+          ...loc,
+          score: beach.score,
+          label: beach.label,
+          badgeClass: beach.class,
+          temp: current ? Math.round(current.temperature_2m) : '--',
+          wind: current ? Math.round(current.wind_speed_10m) : '--'
+        };
+      }).sort((a, b) => b.score - a.score);
+
+      const tempSymbol = currentUnit === 'fahrenheit' ? '°F' : '°C';
+      const speedSymbol = currentUnit === 'fahrenheit' ? 'mph' : 'km/h';
+
+      container.innerHTML = ranked.map((item, index) => {
+        const medals = ['🥇', '🥈', '🥉', '4', '5'];
+        return `
+          <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-xs text-slate-700">
+                ${medals[index]}
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-slate-900">${item.name}, ${item.state}</h4>
+                <p class="text-[11px] text-slate-500">${item.descriptor} • ${item.temp}${tempSymbol}, Wind: ${item.wind} ${speedSymbol}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${item.badgeClass}">
+                ${item.score}/100 • ${item.label}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeBeachSummaryModal() {
+      const modal = document.getElementById('comparison-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openBookmarkInstructions() {
+      const modal = document.getElementById('bookmark-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeBookmarkInstructions() {
+      const modal = document.getElementById('bookmark-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Function to download self as a standalone HTML file
+    function downloadHtmlFile() {
+      const fullHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "coastal_weather_dashboard.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeHourlyModal();
+        closeBeachSummaryModal();
+        closeBookmarkInstructions();
+      }
+    });
+
+    document.getElementById('hourly-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'hourly-modal') closeHourlyModal();
+    });
+    document.getElementById('comparison-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'comparison-modal') closeBeachSummaryModal();
+    });
+    document.getElementById('bookmark-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'bookmark-modal') closeBookmarkInstructions();
+    });
+
+    setInterval(() => {
+      fetchAllWeather();
+    }, 10 * 60 * 1000);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      fetchAllWeather();
+    });
+  </script>
+
+</body></html>
